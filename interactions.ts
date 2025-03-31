@@ -471,10 +471,9 @@ export async function handleInteraction(interaction: Interaction) {
             interaction.reply("Please set the STEAM_ACCESS_TOKEN and STEAM_FAMILY_GROUP_ID environment variables.");
             return;
         }
-        fetch(`https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token=${access_token}&family_groupid=${family_group_id}`)
+        fetch(`https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token=${access_token}&include_own=true&family_groupid=${family_group_id}`)
             .then(res => res.json())
             .then(data => {
-                console.log(data);
                 if (data.response && data.response.apps) {
                     const owners = (data.response.apps as {owner_steamids: string[]}[]).map((app) => app.owner_steamids).reduce((prev,curr) => {
                         curr.forEach(id => {
@@ -482,7 +481,7 @@ export async function handleInteraction(interaction: Interaction) {
                         })
                         return prev;
                     }, {} as Record<string, number>);
-                    interaction.reply(Object.entries(owners).map(([id, count]) => `${id}: ${count}`).join("\n"));
+                    interaction.reply(`${Object.entries(owners).map(([id, count]) => `${id}: ${count}`).join("\n")}\nTotal: ${data.response.apps.length} Games`);
                 } else {
                     interaction.reply("An error occurred while fetching the shared AppIDs.")
                 }
