@@ -463,6 +463,35 @@ export async function handleInteraction(interaction: Interaction) {
         }
         interaction.reply(`Servers of ${member.user.username}:\n${servers.map(server => `<${server}>`).join("\n")}`);
     }
+
+    if (interaction.commandName === "steam") {
+        const access_token = Deno.env.get("STEAM_ACCESS_TOKEN");
+        const family_group_id = Deno.env.get("STEAM_FAMILY_GROUP_ID");
+        if (!access_token || !family_group_id) {
+            interaction.reply("Please set the STEAM_ACCESS_TOKEN and STEAM_FAMILY_GROUP_ID environment variables.");
+            return;
+        }
+        fetch(`https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token=${access_token}&family_groupid=${family_group_id}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.response && data.response.apps) {
+                    const owners = (data.reponse.apps as {owner_steamids: string[]}[]).map((app) => app.owner_steamids).reduce((prev,curr) => {
+                        curr.forEach(id => {
+                            prev[id] = (prev[id] || 0) + 1;
+                        })
+                        return prev;
+                    }, {} as Record<string, number>);
+                    interaction.reply(Object.entries(owners).map(([id, count]) => `${id}: ${count}`).join("\n"));
+                } else {
+                    interaction.reply("An error occurred while fetching the shared AppIDs.")
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                interaction.reply("An error occurred while fetching the shared AppIDs.");
+            });
+
+    }
 }
 
 const supportRoles = [ "757969277063266407", "815298088184446987", "1120392307087261787" ] // Owner, Dev, Support

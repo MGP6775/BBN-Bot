@@ -150,6 +150,10 @@ client.on("ready", () => {
                         {
                             name: "deescalate",
                             description: "Deescalate a ticket to the previous support level",
+                        },
+                        {
+                            name: "steam",
+                            description: "View Steam Family games"
                         }
                     ]
             });
