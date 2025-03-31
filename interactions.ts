@@ -484,7 +484,7 @@ export async function handleInteraction(interaction: Interaction) {
                         }
                         return prev;
                     }, { sum: {} as Record<string, number>, unique: {} as Record<string, number> });
-                    interaction.reply(`${Object.entries(owners.sum).map(([ id, count ]) => `${steamNameMap[ id ] ?? id}: ${count} (${owners.unique[ id ] ?? 0} unique)`).join("\n")}\nTotal: ${data.response.apps.length} Games`);
+                    interaction.reply(`${Object.entries(owners.sum).map(([ id, count ]) => `${steamNameMap[ id ] ?? id}: ${count} (${owners.unique[ id ] ?? 0} unique)`).join("\n")}\nTotal: ${data.response.apps.length} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a,b) => a+b)}`);
                 } else {
                     interaction.reply("An error occurred while fetching the shared AppIDs.")
                 }
