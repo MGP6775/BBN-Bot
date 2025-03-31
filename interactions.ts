@@ -476,7 +476,7 @@ export async function handleInteraction(interaction: Interaction) {
             .then(data => {
                 console.log(data);
                 if (data.response && data.response.apps) {
-                    const owners = (data.reponse.apps as {owner_steamids: string[]}[]).map((app) => app.owner_steamids).reduce((prev,curr) => {
+                    const owners = (data.response.apps as {owner_steamids: string[]}[]).map((app) => app.owner_steamids).reduce((prev,curr) => {
                         curr.forEach(id => {
                             prev[id] = (prev[id] || 0) + 1;
                         })
