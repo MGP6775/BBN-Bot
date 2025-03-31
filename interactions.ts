@@ -475,7 +475,7 @@ export async function handleInteraction(interaction: Interaction) {
             .then(res => res.json())
             .then(data => {
                 if (data.response && data.response.apps) {
-                    const owners = (data.response.apps as { owner_steamids: string[] }[]).map((app) => app.owner_steamids).reduce((prev, curr) => {
+                    const owners = (data.response.apps as { owner_steamids: string[], exclude_reason: number }[]).filter(app => app.exclude_reason === 0).map((app) => app.owner_steamids).reduce((prev, curr) => {
                         curr.forEach(id => {
                             prev.sum[ id ] = (prev.sum[ id ] || 0) + 1;
                         })
