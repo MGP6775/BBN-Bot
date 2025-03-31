@@ -47,7 +47,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: "ghcr.io/bbn-holding/bbn-bot:latest"
+          tags: "ghcr.io/mgp6775/bbn-bot:latest"
 
       - name: Deploy
         uses: appleboy/ssh-action@master
