@@ -475,7 +475,8 @@ export async function handleInteraction(interaction: Interaction) {
             .then(res => res.json())
             .then(data => {
                 if (data.response && data.response.apps) {
-                    const owners = (data.response.apps as { owner_steamids: string[], exclude_reason: number }[]).filter(app => app.exclude_reason === 0).map((app) => app.owner_steamids).reduce((prev, curr) => {
+                    const apps = (data.response.apps as { owner_steamids: string[], exclude_reason: number }[]).filter(app => app.exclude_reason === 0);
+                    const owners = apps.map((app) => app.owner_steamids).reduce((prev, curr) => {
                         curr.forEach(id => {
                             prev.sum[ id ] = (prev.sum[ id ] || 0) + 1;
                         })
@@ -484,7 +485,7 @@ export async function handleInteraction(interaction: Interaction) {
                         }
                         return prev;
                     }, { sum: {} as Record<string, number>, unique: {} as Record<string, number> });
-                    interaction.reply(`${Object.entries(owners.sum).map(([ id, count ]) => `${steamNameMap[ id ] ?? id}: ${count} (${owners.unique[ id ] ?? 0} unique)`).join("\n")}\nTotal: ${data.response.apps.length} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a,b) => a+b)}`);
+                    interaction.reply(`${Object.entries(owners.sum).map(([ id, count ]) => `${steamNameMap[ id ] ?? id}: ${count} (${owners.unique[ id ] ?? 0} unique)`).join("\n")}\nTotal: ${apps.length} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a,b) => a+b)}`);
                 } else {
                     interaction.reply("An error occurred while fetching the shared AppIDs.")
                 }
