@@ -474,6 +474,7 @@ export async function handleInteraction(interaction: Interaction) {
         fetch(`https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token=${access_token}&family_groupid=${family_group_id}`)
             .then(res => res.json())
             .then(data => {
+                console.log(data);
                 if (data.response && data.response.apps) {
                     const owners = (data.reponse.apps as {owner_steamids: string[]}[]).map((app) => app.owner_steamids).reduce((prev,curr) => {
                         curr.forEach(id => {
