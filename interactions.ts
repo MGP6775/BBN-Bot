@@ -475,13 +475,16 @@ export async function handleInteraction(interaction: Interaction) {
             .then(res => res.json())
             .then(data => {
                 if (data.response && data.response.apps) {
-                    const owners = (data.response.apps as {owner_steamids: string[]}[]).map((app) => app.owner_steamids).reduce((prev,curr) => {
+                    const owners = (data.response.apps as { owner_steamids: string[] }[]).map((app) => app.owner_steamids).reduce((prev, curr) => {
                         curr.forEach(id => {
-                            prev[id] = (prev[id] || 0) + 1;
+                            prev.sum[ id ] = (prev.sum[ id ] || 0) + 1;
                         })
+                        if (curr.length === 1) {
+                            prev.unique[ curr[ 0 ] ] = (prev.unique[ curr[ 0 ] ] || 0) + 1;
+                        }
                         return prev;
-                    }, {} as Record<string, number>);
-                    interaction.reply(`${Object.entries(owners).map(([id, count]) => `${id}: ${count}`).join("\n")}\nTotal: ${data.response.apps.length} Games`);
+                    }, { sum: {} as Record<string, number>, unique: {} as Record<string, number> });
+                    interaction.reply(`${Object.entries(owners.sum).map(([ id, count ]) => `${steamNameMap[ id ] ?? id}: ${count} (${owners.unique[ id ] ?? 0} unique)`).join("\n")}\nTotal: ${data.response.apps.length} Games`);
                 } else {
                     interaction.reply("An error occurred while fetching the shared AppIDs.")
                 }
@@ -492,6 +495,15 @@ export async function handleInteraction(interaction: Interaction) {
             });
 
     }
+}
+
+const steamNameMap: Record<string, string> = {
+    "76561198278360337": "Max",
+    "76561198335845889": "Greg",
+    "76561198885300832": "GD",
+    "76561198205438540": "lucsoft",
+    "76561198408459308": "Logu",
+    "76561199001887783": "Waldi"
 }
 
 const supportRoles = [ "757969277063266407", "815298088184446987", "1120392307087261787" ] // Owner, Dev, Support
