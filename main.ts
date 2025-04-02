@@ -162,7 +162,7 @@ client.on("ready", () => {
                                     type: 3
                                 },
                                 {
-                                    name: 'web_token',
+                                    name: 'webtoken',
                                     description: "Web token for Steam. Found at https://steamcommunity.com/dev/apikey",
                                     type: 3
                                 }
