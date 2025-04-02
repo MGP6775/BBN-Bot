@@ -160,6 +160,11 @@ client.on("ready", () => {
                                     description: "Access token for Steam. Found at https://store.steampowered.com/pointssummary/ajaxgetasyncconfig",
                                     required: true,
                                     type: 3
+                                },
+                                {
+                                    name: 'web_token',
+                                    description: "Web token for Steam. Found at https://steamcommunity.com/dev/apikey",
+                                    type: 3
                                 }
                             ]
                         }

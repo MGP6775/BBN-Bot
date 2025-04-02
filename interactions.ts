@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, GuildMemberRoleManager, Interaction, Message, ModalBuilder, PermissionsBitField, TextChannel, TextInputBuilder, TextInputStyle, User, UserSelectMenuBuilder, VoiceChannel } from "npm:discord.js"
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, GuildMemberRoleManager, Interaction, Message, MessageFlags, ModalBuilder, PermissionsBitField, TextChannel, TextInputBuilder, TextInputStyle, User, UserSelectMenuBuilder, VoiceChannel } from "npm:discord.js"
 import { saveTranscript, findUser, lastLogin, getServerURLs, getLastDaily, addCoins, setLastDaily, getCoins, removeCoins, addPartner, removePartner, getPartners, getMemberFromBBNId } from "./db.ts";
 
 export async function handleInteraction(interaction: Interaction) {
@@ -466,6 +466,11 @@ export async function handleInteraction(interaction: Interaction) {
 
     if (interaction.commandName === "steam") {
         const access_token = interaction.options.getString("accesstoken");
+        if (!access_token) {
+            interaction.channel?.isSendable() && interaction.channel.send("Please provide a valid access token.");
+            return;
+        }
+        const web_token = interaction.options.getString("webtoken");
         fetch(`https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token=${access_token}`)
             .then(res => res.json())
             .then(data => data.response.family_groupid)
@@ -474,7 +479,7 @@ export async function handleInteraction(interaction: Interaction) {
             .then(data => {
                 if (data.response && data.response.apps) {
                     const apps = (data.response.apps as { owner_steamids: string[], exclude_reason: number }[]).filter(app => app.exclude_reason === 0);
-                    const owners = apps.map((app) => app.owner_steamids).reduce((prev, curr) => {
+                    return apps.map((app) => app.owner_steamids).reduce((prev, curr) => {
                         curr.forEach(id => {
                             prev.sum[ id ] = (prev.sum[ id ] || 0) + 1;
                         })
@@ -482,27 +487,32 @@ export async function handleInteraction(interaction: Interaction) {
                             prev.unique[ curr[ 0 ] ] = (prev.unique[ curr[ 0 ] ] || 0) + 1;
                         }
                         return prev;
-                    }, { sum: {} as Record<string, number>, unique: {} as Record<string, number> });
-                    interaction.channel?.isSendable() && interaction.channel.send(`${Object.entries(owners.sum).map(([ id, count ]) => `${steamNameMap[ id ] ?? id}: ${count} (${owners.unique[ id ] ?? 0} unique)`).join("\n")}\nTotal: ${apps.length} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a, b) => a + b)}`);
+                    }, { sum: {} as Record<string, number>, unique: {} as Record<string, number>, apps: apps.length });
                 } else {
-                    interaction.channel?.isSendable() && interaction.channel.send("An error occurred while fetching the shared AppIDs.")
+                    throw new Error("Malformed response: " + JSON.stringify(data));
                 }
+            })
+            .then(owners => fetchSteamnames(web_token, Object.keys(owners.sum), owners))
+            .then(owners => {
+                interaction.channel?.isSendable() && interaction.channel.send(`${Object.entries(owners.sum).map(([ name, count ]) => `${name}: ${count} (${owners.unique[ name ] ?? 0} unique)`).join("\n")}\nTotal: ${owners.apps} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a, b) => a + b)}`);
             })
             .catch(err => {
                 console.error(err);
                 interaction.channel?.isSendable() && interaction.channel.send("An error occurred while fetching the shared AppIDs.");
             });
-
+        interaction.reply({flags: MessageFlags.Ephemeral, content: "Fetching shared AppIDs..."});
     }
 }
 
-const steamNameMap: Record<string, string> = {
-    "76561198278360337": "Max",
-    "76561198335845889": "Greg",
-    "76561198885300832": "GD",
-    "76561198205438540": "lucsoft",
-    "76561198408459308": "Logu",
-    "76561199001887783": "Waldi"
+async function fetchSteamnames(web_token: string | null, ids: string[], owners: { sum: Record<string, number>, unique: Record<string, number>, apps: number }) {
+    if (!web_token) return owners;
+    const req = await fetch(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${web_token}&steamids=${Object.keys(ids).join(",")}`);
+    const data = await req.json()
+    if (data.response && data.response.players) {
+        owners.sum = Object.fromEntries(Object.entries(owners.sum).map(([ key, value ]) => [ data.response.players.find((player: any) => player.steamid === key)?.personaname ?? key, value ]))
+        owners.unique = Object.fromEntries(Object.entries(owners.unique).map(([ key, value ]) => [ data.response.players.find((player: any) => player.steamid === key)?.personaname ?? key, value ]))
+    }
+    return owners;
 }
 
 const supportRoles = [ "757969277063266407", "815298088184446987", "1120392307087261787" ] // Owner, Dev, Support
