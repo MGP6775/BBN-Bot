@@ -492,9 +492,9 @@ export async function handleInteraction(interaction: Interaction) {
                     throw new Error("Malformed response: " + JSON.stringify(data));
                 }
             })
-            .then(owners => fetchSteamnames(web_token, Object.keys(owners.sum), owners))
+            .then(owners => fetchSteamnames(web_token, owners))
             .then(owners => {
-                interaction.channel?.isSendable() && interaction.channel.send(`${Object.entries(owners.sum).map(([ name, count ]) => `${name}: ${count} (${owners.unique[ name ] ?? 0} unique)`).join("\n")}\nTotal: ${owners.apps} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a, b) => a + b)}`);
+                interaction.channel?.isSendable() && interaction.channel.send(`Here are stats about your steam family <@${interaction.member?.user.id}>:\n\n${Object.entries(owners.sum).map(([ name, count ]) => `${name}: ${count} (${owners.unique[ name ] ?? 0} unique)`).join("\n")}\nTotal: ${owners.apps} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a, b) => a + b)}`);
             })
             .catch(err => {
                 console.error(err);
@@ -504,9 +504,9 @@ export async function handleInteraction(interaction: Interaction) {
     }
 }
 
-async function fetchSteamnames(web_token: string | null, ids: string[], owners: { sum: Record<string, number>, unique: Record<string, number>, apps: number }) {
+async function fetchSteamnames(web_token: string | null, owners: { sum: Record<string, number>, unique: Record<string, number>, apps: number }) {
     if (!web_token) return owners;
-    const req = await fetch(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${web_token}&steamids=${Object.keys(ids).join(",")}`);
+    const req = await fetch(`https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${web_token}&steamids=${Object.keys(owners.sum).join(",")}`);
     const data = await req.json()
     if (data.response && data.response.players) {
         owners.sum = Object.fromEntries(Object.entries(owners.sum).map(([ key, value ]) => [ data.response.players.find((player: any) => player.steamid === key)?.personaname ?? key, value ]))
