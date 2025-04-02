@@ -157,7 +157,7 @@ client.on("ready", () => {
                             options: [
                                 {
                                     name: 'accesstoken',
-                                    description: "Access token for Steam. Can be found at https://store.steampowered.com/pointssummary/ajaxgetasyncconfig",
+                                    description: "Access token for Steam. Found at https://store.steampowered.com/pointssummary/ajaxgetasyncconfig",
                                     required: true,
                                     type: 3
                                 }
