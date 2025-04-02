@@ -465,13 +465,11 @@ export async function handleInteraction(interaction: Interaction) {
     }
 
     if (interaction.commandName === "steam") {
-        const access_token = Deno.env.get("STEAM_ACCESS_TOKEN");
-        const family_group_id = Deno.env.get("STEAM_FAMILY_GROUP_ID");
-        if (!access_token || !family_group_id) {
-            interaction.reply("Please set the STEAM_ACCESS_TOKEN and STEAM_FAMILY_GROUP_ID environment variables.");
-            return;
-        }
-        fetch(`https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token=${access_token}&include_own=true&family_groupid=${family_group_id}`)
+        const access_token = interaction.options.getString("accesstoken");
+        fetch(`https://api.steampowered.com/IFamilyGroupsService/GetFamilyGroupForUser/v1/?access_token=${access_token}`)
+            .then(res => res.json())
+            .then(data => data.response.family_groupid)
+            .then(family_group_id => fetch(`https://api.steampowered.com/IFamilyGroupsService/GetSharedLibraryApps/v1/?access_token=${access_token}&include_own=true&family_groupid=${family_group_id}`))
             .then(res => res.json())
             .then(data => {
                 if (data.response && data.response.apps) {
@@ -485,14 +483,14 @@ export async function handleInteraction(interaction: Interaction) {
                         }
                         return prev;
                     }, { sum: {} as Record<string, number>, unique: {} as Record<string, number> });
-                    interaction.reply(`${Object.entries(owners.sum).map(([ id, count ]) => `${steamNameMap[ id ] ?? id}: ${count} (${owners.unique[ id ] ?? 0} unique)`).join("\n")}\nTotal: ${apps.length} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a,b) => a+b)}`);
+                    interaction.followUp(`${Object.entries(owners.sum).map(([ id, count ]) => `${steamNameMap[ id ] ?? id}: ${count} (${owners.unique[ id ] ?? 0} unique)`).join("\n")}\nTotal: ${apps.length} Games\nGames with only one owner: ${Object.values(owners.unique).reduce((a, b) => a + b)}`);
                 } else {
-                    interaction.reply("An error occurred while fetching the shared AppIDs.")
+                    interaction.followUp("An error occurred while fetching the shared AppIDs.")
                 }
             })
             .catch(err => {
                 console.error(err);
-                interaction.reply("An error occurred while fetching the shared AppIDs.");
+                interaction.followUp("An error occurred while fetching the shared AppIDs.");
             });
 
     }

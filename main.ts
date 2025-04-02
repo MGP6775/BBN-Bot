@@ -15,7 +15,7 @@ client.on("ready", () => {
     (async () => {
         try {
             console.log('Started refreshing application (/) commands.');
-
+            // https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-type
             await rest.put(Routes.applicationCommands(client.user!.id), {
                 body:
                     [
@@ -153,7 +153,15 @@ client.on("ready", () => {
                         },
                         {
                             name: "steam",
-                            description: "View Steam Family games"
+                            description: "View Steam Family games",
+                            options: [
+                                {
+                                    name: 'accesstoken',
+                                    description: "Access token for Steam. Can be found at https://store.steampowered.com/pointssummary/ajaxgetasyncconfig",
+                                    required: true,
+                                    type: 3
+                                }
+                            ]
                         }
                     ]
             });
