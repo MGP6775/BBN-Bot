@@ -1,7 +1,8 @@
 import { Client, TextChannel, GuildBan, GuildMember, PartialGuildMember, User, Message, VoiceState, EmbedBuilder, GuildTextBasedChannel } from 'npm:discord.js'
+import { logChannelID, showCaseChannelID } from './const.ts';
 
 export function sendBanMessage(ban: GuildBan, banned: boolean) {
-    ban.client.channels.fetch(Deno.env.get("LOG_CHANNEL")!).then(channel => {
+    ban.client.channels.fetch(logChannelID).then(channel => {
         const embed = defaultEmbed(ban.user);
         embed.setTitle(`${embed.data.title} ${banned ? '' : 'un'}banned`)
             .addFields([ { name: 'Reason', value: ban.reason ?? 'Not specified' } ]);
@@ -11,7 +12,7 @@ export function sendBanMessage(ban: GuildBan, banned: boolean) {
 export function sendLeaveMessage(member: PartialGuildMember | GuildMember) {
     const embed = defaultEmbed(member.user);
     embed.setTitle(`${embed.data.title} left`)
-    member.guild.channels.fetch(Deno.env.get("LOG_CHANNEL")!).then(channel => (channel as TextChannel).send({ embeds: [ embed ] }));
+    member.guild.channels.fetch(logChannelID).then(channel => (channel as TextChannel).send({ embeds: [ embed ] }));
     member.guild.channels.fetch().then(channels => channels.filter(channel => channel?.isTextBased() && channel.name === "ticket-"+member.user.id).forEach(channel => (channel as GuildTextBasedChannel).send({ embeds: [ embed ] })));
 }
 export function sendPrivateMessage(message: Message, client: Client) {
@@ -26,12 +27,12 @@ export function sendPrivateMessage(message: Message, client: Client) {
             ])
             .setDescription(`\`\`\`${message.content}\`\`\``)
             .setColor('#57F287');
-        client.channels.fetch(Deno.env.get("LOG_CHANNEL")!).then(channel => (channel as TextChannel).send({ embeds: [ embed ], files: [ ...message.attachments.values() ] }))
+        client.channels.fetch(logChannelID).then(channel => (channel as TextChannel).send({ embeds: [ embed ], files: [ ...message.attachments.values() ] }))
     }
 }
 
 export async function handleShowcaseMessage(message: Message) {
-    if (message.channel.id !== Deno.env.get("SHOWCASE_CHANNEL")! || message.author.bot) return;
+    if (message.channel.id !== showCaseChannelID! || message.author.bot) return;
     const domainPattern = /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,}))(?::([0-9]+))?/g;
     const match = Array.from(message.content.matchAll(domainPattern));
 

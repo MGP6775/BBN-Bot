@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, GuildMemberRoleManager, Interaction, Message, MessageFlags, ModalBuilder, PermissionsBitField, TextChannel, TextInputBuilder, TextInputStyle, User, UserSelectMenuBuilder, VoiceChannel } from "npm:discord.js"
 import { saveTranscript, findUser, lastLogin, getServerURLs, getLastDaily, addCoins, setLastDaily, getCoins, removeCoins, addPartner, removePartner, getPartners, getMemberFromBBNId } from "./db.ts";
-import { createTicketChannelID, firstLevelSupportCategoryID, ownerRoleID, secondLevelSupportCategoryID, supportRole, supportRoles, verified } from "./const.ts";
+import { createTicketChannelID, firstLevelSupportCategoryID, getStartedChannelID, ownerRoleID, secondLevelSupportCategoryID, supportRole, supportRoles, verified } from "./const.ts";
 
 export async function handleInteraction(interaction: Interaction) {
     if (interaction.isButton()) {
@@ -385,7 +385,7 @@ export async function handleInteraction(interaction: Interaction) {
         const ram = interaction.options.getInteger("ram", true);
         const storage = interaction.options.getInteger("storage", true);
         const slots = interaction.options.getInteger("slots", true);
-        const invite = await interaction.guild?.invites.create(Deno.env.get("GETSTARTED_CHANNEL")!, {
+        const invite = await interaction.guild?.invites.create(getStartedChannelID, {
             maxAge: 0,
             unique: true,
             reason: "Partner invite",
