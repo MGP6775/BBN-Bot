@@ -162,7 +162,7 @@ export async function handleInteraction(interaction: Interaction) {
                 name: ticketname,
                 type: ChannelType.GuildText,
                 topic: `ticket of ${interaction.user.tag}`,
-                parent: "1081347349462405221",
+                parent: firstLevelSupportCategoryID,
             });
 
             setTimeout(() => {
