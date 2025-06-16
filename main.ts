@@ -9,7 +9,7 @@ const client = new Client({ intents: 3276799 });
 
 client.on("ready", () => {
     console.log(`Logged in as ${client.user!.tag}!`);
-    client.user!.setActivity('bbn.one', { type: ActivityType.Listening });
+    client.user!.setActivity('bbn.music', { type: ActivityType.Listening });
 
     const rest = new REST().setToken(Deno.env.get("TOKEN")!);
 

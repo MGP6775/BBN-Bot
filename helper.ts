@@ -126,6 +126,6 @@ export function defaultEmbed(user: User) {
             { name: "ID", value: user.id, inline: true }
         ])
         .setTimestamp(new Date())
-        .setFooter({ text: "Provided by BBN", iconURL: "https://bbn.one/images/avatar.png" })
+        .setFooter({ text: "Provided by BBN", iconURL: "https://bbn.music/images/avatar.png" })
         .setColor('#ED4245');
 }

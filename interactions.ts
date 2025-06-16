@@ -229,7 +229,7 @@ export async function handleInteraction(interaction: Interaction) {
             .setColor("#f55a00")
             .setTitle(`BBN - Ticket Support`)
             .setDescription(`If you have a problem or question regarding BBN, create a ticket and we will get back to you as soon as possible.\ To create a ticket click the button below.`)
-            .setFooter({ text: "Provided by BBN", iconURL: "https://bbn.one/images/avatar.png" })
+            .setFooter({ text: "Provided by BBN", iconURL: "https://bbn.music/images/avatar.png" })
         const btnrow = new ActionRowBuilder<ButtonBuilder>().addComponents([
             new ButtonBuilder()
                 .setCustomId("create_ticket")
@@ -311,7 +311,7 @@ export async function handleInteraction(interaction: Interaction) {
                 reward *= 10;
             const res = await addCoins(interaction.user.id, reward);
             if (res === null) {
-                interaction.reply("We couldn't find your account. Please [log in via Discord here](<https://bbn.one/api/@bbn/auth/redirect/discord?goal=/hosting>)");
+                interaction.reply("We couldn't find your account. Please [log in via Discord here](<https://bbn.music/api/@bbn/auth/redirect/discord?goal=/hosting>)");
                 return;
             }
             await setLastDaily(interaction.user.id, Date.now());
@@ -331,7 +331,7 @@ export async function handleInteraction(interaction: Interaction) {
         }
         await getCoins(id).then(result => {
             if (result === null) {
-                interaction.reply("We couldn't find your account. Please [log in via Discord here](<https://bbn.one/api/@bbn/auth/redirect/discord?goal=/hosting>)");
+                interaction.reply("We couldn't find your account. Please [log in via Discord here](<https://bbn.music/api/@bbn/auth/redirect/discord?goal=/hosting>)");
             } else {
                 interaction.reply(`You currently have ${result} coins.`);
             }
