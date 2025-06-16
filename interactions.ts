@@ -229,7 +229,7 @@ export async function handleInteraction(interaction: Interaction) {
             .setColor("#f55a00")
             .setTitle(`BBN - Ticket Support`)
             .setDescription(`If you have a problem or question regarding BBN, create a ticket and we will get back to you as soon as possible.\ To create a ticket click the button below.`)
-            .setFooter({ text: "Provided by BBN", iconURL: "https://bbn.music/images/avatar.png" })
+            .setFooter({ text: "Provided by BBN", iconURL: "https://bbn.music/images/apple.png" })
         const btnrow = new ActionRowBuilder<ButtonBuilder>().addComponents([
             new ButtonBuilder()
                 .setCustomId("create_ticket")
