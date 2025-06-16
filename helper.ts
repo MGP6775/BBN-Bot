@@ -32,7 +32,7 @@ export function sendPrivateMessage(message: Message, client: Client) {
 }
 
 export async function handleShowcaseMessage(message: Message) {
-    if (message.channel.id !== showCaseChannelID! || message.author.bot) return;
+    if (message.channel.id !== showCaseChannelID || message.author.bot) return;
     const domainPattern = /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,}))(?::([0-9]+))?/g;
     const match = Array.from(message.content.matchAll(domainPattern));
 
