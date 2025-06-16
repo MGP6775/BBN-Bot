@@ -3,6 +3,7 @@ import { handleShowcaseMessage, sendBanMessage, sendLeaveMessage, sendPrivateMes
 import { handleInteraction } from "./interactions.ts";
 import { PartnerManager } from './partner.ts';
 import { findUser } from "./db.ts";
+import { linksCategoryID } from './const.ts';
 
 const client = new Client({ intents: 3276799 });
 
@@ -207,7 +208,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
             const channel = await newMember.guild.channels.create({
                 name: `link-${newMember.id}`,
-                parent: await newMember.guild.channels.fetch(Deno.env.get("LINK_CATEGORY")!) as CategoryChannel,
+                parent: await newMember.guild.channels.fetch(linksCategoryID) as CategoryChannel,
             });
             await channel.permissionOverwrites.create(newMember, { ViewChannel: true });
             await channel.send({ content: `<@${newMember.id}> Looks like you just boosted the server! Unfortunately, you are not linked to your BBN account yet. Please send your Email address to this channel to link your account. Our Team will respond as soon as possible.`, allowedMentions: { users: [ newMember.id ] } });

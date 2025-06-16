@@ -1,6 +1,7 @@
 import { Client, Collection, GuildMember, Invite, TextChannel } from "npm:discord.js";
 import { getMemberFromBBNId, getPartnerFromInvite, updateLastInvite } from "./db.ts";
 import { defaultEmbed } from "./helper.ts";
+import { guildID, logChannelID } from "./const.ts";
 
 export class PartnerManager {
 
@@ -11,7 +12,7 @@ export class PartnerManager {
 
     invites: Collection<string, Invite> = new Collection();
     async cacheInvites() {
-        const guild = await this.client.guilds.fetch(Deno.env.get("GUILD_ID")!);
+        const guild = await this.client.guilds.fetch(guildID);
         const invites = await guild.invites.fetch({
             cache: false
         });
@@ -20,7 +21,7 @@ export class PartnerManager {
     }
 
     async getLastInvite() {
-        const guild = await this.client.guilds.fetch(Deno.env.get("GUILD_ID")!);
+        const guild = await this.client.guilds.fetch(guildID);
         const invites = await guild.invites.fetch({
             cache: false
         });
@@ -47,6 +48,6 @@ export class PartnerManager {
         embed.setTitle(`${member.user.tag} ${action === 'join' ? 'joined' : 'left'}`)
             .setColor(action === 'join' ? '#FEE75C' : '#F57F7F')
             .setDescription(invitetext);
-        member.guild.channels.fetch(Deno.env.get("LOG_CHANNEL")!).then(channel => (channel as TextChannel).send({ embeds: [ embed ] }));
+        member.guild.channels.fetch(logChannelID).then(channel => (channel as TextChannel).send({ embeds: [ embed ] }));
     }
 }

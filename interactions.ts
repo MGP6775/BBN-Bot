@@ -1,5 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, GuildMemberRoleManager, Interaction, Message, MessageFlags, ModalBuilder, PermissionsBitField, TextChannel, TextInputBuilder, TextInputStyle, User, UserSelectMenuBuilder, VoiceChannel } from "npm:discord.js"
 import { saveTranscript, findUser, lastLogin, getServerURLs, getLastDaily, addCoins, setLastDaily, getCoins, removeCoins, addPartner, removePartner, getPartners, getMemberFromBBNId } from "./db.ts";
+import { createTicketChannelID, firstLevelSupportCategoryID, getStartedChannelID, ownerRoleID, secondLevelSupportCategoryID, supportRole, supportRoles, verified } from "./const.ts";
 
 export async function handleInteraction(interaction: Interaction) {
     if (interaction.isButton()) {
@@ -86,7 +87,7 @@ export async function handleInteraction(interaction: Interaction) {
 
     if (interaction.isUserSelectMenu() && interaction.guild && interaction.customId === 'verify_modal') {
         const member = interaction.guild.members.cache.get(interaction.values[ 0 ])
-        const role = interaction.guild.roles.cache.get("757983851032215673")
+        const role = interaction.guild.roles.cache.get(verified)
 
         if (member && role) {
             if (member.roles.cache.has(role.id)) {
@@ -147,7 +148,7 @@ export async function handleInteraction(interaction: Interaction) {
                     "ViewChannel": true
                 });
                 await possibleChannel.send({
-                    content: `${interaction.member} || <@&1120392307087261787>`,
+                    content: `${interaction.member} || <@&${supportRole}>`,
                     embeds: [ embed ],
                     components: [ btnrow ],
                 });
@@ -161,7 +162,7 @@ export async function handleInteraction(interaction: Interaction) {
                 name: ticketname,
                 type: ChannelType.GuildText,
                 topic: `ticket of ${interaction.user.tag}`,
-                parent: "1081347349462405221",
+                parent: firstLevelSupportCategoryID,
             });
 
             setTimeout(() => {
@@ -171,7 +172,7 @@ export async function handleInteraction(interaction: Interaction) {
             }, 5000);
 
             await ch.send({
-                content: `${interaction.member} || <@&1120392307087261787>`,
+                content: `${interaction.member} || <@&${supportRole}>`,
                 embeds: [ embed ],
                 components: [ btnrow ],
             });
@@ -221,7 +222,7 @@ export async function handleInteraction(interaction: Interaction) {
         // interaction.reply("message sent!")
 
         // code
-        const ticketChannel = interaction.guild!.channels.cache.get("1081337337704886392") as TextChannel;
+        const ticketChannel = interaction.guild!.channels.cache.get(createTicketChannelID) as TextChannel;
         if (!ticketChannel) return;
 
         const embed = new EmbedBuilder()
@@ -256,13 +257,13 @@ export async function handleInteraction(interaction: Interaction) {
             return;
         }
         // move to escalation category
-        interaction.channel?.setParent("1120395441138315345", {
+        interaction.channel?.setParent(secondLevelSupportCategoryID, {
             lockPermissions: false,
             reason: "Ticket escalated",
         });
         interaction.reply({
-            allowedMentions: { roles: [ '757969277063266407' ] },
-            content: "Ticket escalated. || <@&757969277063266407>"
+            allowedMentions: { roles: [ ownerRoleID ] },
+            content: `Ticket escalated. || <@&${ownerRoleID}>`
         });
     }
 
@@ -272,18 +273,18 @@ export async function handleInteraction(interaction: Interaction) {
             return;
         }
         // check if ticket channel
-        if (!(interaction.channel?.type === ChannelType.GuildText && interaction.channel?.parent?.id === "1120395441138315345")) {
+        if (!(interaction.channel?.type === ChannelType.GuildText && interaction.channel?.parent?.id === secondLevelSupportCategoryID)) {
             interaction.reply("This command can only be used in a ticket channel.");
             return;
         }
-        // move to escalation category
-        interaction.channel?.setParent("1081347349462405221", {
+        // move to first level category
+        interaction.channel?.setParent(firstLevelSupportCategoryID, {
             lockPermissions: false,
             reason: "Ticket deescalated",
         });
         interaction.reply({
-            allowedMentions: { roles: [ '1120392307087261787' ] },
-            content: "Ticket deescalated. || <@&1120392307087261787>"
+            allowedMentions: { roles: [ supportRole ] },
+            content: `Ticket deescalated. || <@&${supportRole}>`
         });
     }
 
@@ -306,7 +307,7 @@ export async function handleInteraction(interaction: Interaction) {
             }
 
             let reward = 10 + (Math.floor(Math.random() * 10));
-            if ((await interaction.guild!.members.fetch(interaction.user.id)).premiumSince || (await interaction.guild!.members.fetch(interaction.user.id)).roles.cache.has("1120392307087261787"))
+            if ((await interaction.guild!.members.fetch(interaction.user.id)).premiumSince || (await interaction.guild!.members.fetch(interaction.user.id)).roles.cache.has(supportRole))
                 reward *= 10;
             const res = await addCoins(interaction.user.id, reward);
             if (res === null) {
@@ -384,7 +385,7 @@ export async function handleInteraction(interaction: Interaction) {
         const ram = interaction.options.getInteger("ram", true);
         const storage = interaction.options.getInteger("storage", true);
         const slots = interaction.options.getInteger("slots", true);
-        const invite = await interaction.guild?.invites.create(Deno.env.get("GETSTARTED_CHANNEL")!, {
+        const invite = await interaction.guild?.invites.create(getStartedChannelID, {
             maxAge: 0,
             unique: true,
             reason: "Partner invite",
@@ -514,8 +515,6 @@ async function fetchSteamnames(web_token: string | null, owners: { sum: Record<s
     }
     return owners;
 }
-
-const supportRoles = [ "757969277063266407", "815298088184446987", "1120392307087261787" ] // Owner, Dev, Support
 
 function lockVoice(interaction: ButtonInteraction, lock: boolean) {
     const channel = (interaction.member as GuildMember).voice.channel as VoiceChannel
