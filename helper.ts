@@ -63,7 +63,7 @@ export function sendVoice(oldState: VoiceState, newState: VoiceState) {
 }
 
 function sendVoiceMessage(embed: EmbedBuilder, newState: VoiceState) {
-    newState.guild.channels.fetch(Deno.env.get("VOICE_LOG_CHANNEL")!).then(channel => (channel as TextChannel).send({ embeds: [ embed ] }))
+    newState.guild.channels.fetch(voiceLogChannelID).then(channel => (channel as TextChannel).send({ embeds: [ embed ] }))
 }
 
 function generateVoiceEmbed(word: string, negative: boolean, newState: VoiceState, oldState: VoiceState) {
