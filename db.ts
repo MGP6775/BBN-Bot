@@ -102,16 +102,6 @@ export async function setLastDaily(discordId: string, lastDaily: number) {
     });
 }
 
-=======
-export async function getServerURLs(discordId: string) {
-    const user = await findUser(discordId);
-    if (!user) return null;
-    const servers = await db.collection("@bbn/hosting/servers").find({
-        user
-    }).toArray();
-    return servers.map(server => server.identifier ? `https://panel.bbn.music/server/${server.identifier}` : `https://bbn.music/hosting?path=servers/${server._id}/`);
-}
-
 export async function lastLogin(discordId: string) {
     const user = await findUser(discordId);
     if (!user) return null;
