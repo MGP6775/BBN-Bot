@@ -102,15 +102,6 @@ export async function setLastDaily(discordId: string, lastDaily: number) {
     });
 }
 
-export async function getServerURLs(discordId: string) {
-    const user = await findUser(discordId);
-    if (!user) return null;
-    const servers = await db.collection("@bbn/hosting/servers").find({
-        user
-    }).toArray();
-    return servers.map(server => server.identifier ? `https://panel.bbn.music/server/${server.identifier}` : `https://bbn.music/hosting?path=servers/${server._id}/`);
-}
-
 export async function lastLogin(discordId: string) {
     const user = await findUser(discordId);
     if (!user) return null;
@@ -135,54 +126,6 @@ export async function saveTranscript(transcript: any) {
     await db.collection("@bbn/bot/transcripts").insertOne(transcript);
 }
 
-export async function addPartner(member: ObjectId, cpu: number, memory: number, disk: number, slots: number, invite: string) {
-    await db.collection("@bbn/bot/partners").insertOne({
-        owner: member,
-        cpu,
-        memory,
-        disk,
-        slots,
-        invite,
-        lastinvite: Date.now()
-    });
-    await db.collection("@bbn/hosting/access").updateOne({
-        owner: member
-    }, {
-        $inc: {
-            "limits.memory": memory,
-            "limits.disk": disk,
-            "limits.cpu": cpu,
-            "limits.slots": slots
-        }
-    });
-}
-
-export async function removePartner(member: ObjectId) {
-    const partner = await db.collection("@bbn/bot/partners").findOne({
-        owner: member
-    });
-    if (!partner) return null;
-    db.collection("@bbn/hosting/access").updateOne({
-        owner: member
-    }, {
-        $inc: {
-            "limits.memory": -partner.memory,
-            "limits.disk": -partner.disk,
-            "limits.cpu": -partner.cpu,
-            "limits.slots": -partner.slots
-
-        }
-    });
-    db.collection("@bbn/bot/partners").deleteOne({
-        owner: member
-    });
-}
-
-export function getPartnerFromInvite(invite: string) {
-    return db.collection("@bbn/bot/partners").findOne({
-        invite
-    });
-}
 export function getMemberFromBBNId(bbnid: ObjectId) {
     return db.collection("users").findOne({
         _id: bbnid
@@ -197,8 +140,4 @@ export function updateLastInvite(member: ObjectId) {
             lastinvite: Date.now()
         }
     })
-}
-
-export function getPartners() {
-    return db.collection("@bbn/bot/partners").find().toArray();
 }

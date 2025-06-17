@@ -1,5 +1,5 @@
 import { Client, TextChannel, GuildBan, GuildMember, PartialGuildMember, User, Message, VoiceState, EmbedBuilder, GuildTextBasedChannel } from 'npm:discord.js'
-import { logChannelID, showCaseChannelID } from './const.ts';
+import { logChannelID, voiceLogChannelID } from './const.ts';
 
 export function sendBanMessage(ban: GuildBan, banned: boolean) {
     ban.client.channels.fetch(logChannelID).then(channel => {
@@ -31,46 +31,6 @@ export function sendPrivateMessage(message: Message, client: Client) {
     }
 }
 
-export async function handleShowcaseMessage(message: Message) {
-    if (message.channel.id !== showCaseChannelID || message.author.bot) return;
-    const domainPattern = /(?:https?:\/\/)?(?:www\.)?([a-zA-Z0-9.-]+(?:\.[a-zA-Z]{2,}))(?::([0-9]+))?/g;
-    const match = Array.from(message.content.matchAll(domainPattern));
-
-    if (match.length === 1) {
-        const userDomain = match[ 0 ][ 1 ];
-
-        if (!Deno.env.get("BBN_DOMAINS")!.split(",").includes(userDomain)) {
-            const userIp = (await resolve([ userDomain ]))[ 0 ];
-            const bbnIps = await resolve(Deno.env.get("BBN_DOMAINS")!.split(','));
-            if (!bbnIps.includes(userIp)) {
-                replyAndDelete(message, `Your server \`${userDomain}\` is not hosted by BBN. Please use a BBN domain.`);
-                return;
-            }
-        }
-        message.react('✅');
-        return;
-    }
-    replyAndDelete(message, `Your message does not contain a valid domain or contains multiple domains. Please only send one domain.`);
-    return;
-}
-
-async function replyAndDelete(message: Message, content: string) {
-    await message.reply(content).then(reply => setTimeout(() => reply.delete(), 10000));
-    message.delete();
-}
-
-export function resolve(domains: string[]) {
-    return new Promise<string[]>((resolve, reject) => {
-        const resolved: string[] = [];
-        domains.forEach(domain => {
-            Deno.resolveDns(domain, "A").then(res => {
-                resolved.push(res[ 0 ]);
-                if (resolved.length === domains.length) resolve(resolved);
-            }).catch(err => reject(err));
-        })
-        resolve(resolved);
-    })
-}
 
 export function sendVoice(oldState: VoiceState, newState: VoiceState) {
     if (!oldState.channel && newState.channel) {
@@ -103,7 +63,7 @@ export function sendVoice(oldState: VoiceState, newState: VoiceState) {
 }
 
 function sendVoiceMessage(embed: EmbedBuilder, newState: VoiceState) {
-    newState.guild.channels.fetch(Deno.env.get("VOICE_LOG_CHANNEL")!).then(channel => (channel as TextChannel).send({ embeds: [ embed ] }))
+    newState.guild.channels.fetch(voiceLogChannelID).then(channel => (channel as TextChannel).send({ embeds: [ embed ] }))
 }
 
 function generateVoiceEmbed(word: string, negative: boolean, newState: VoiceState, oldState: VoiceState) {
