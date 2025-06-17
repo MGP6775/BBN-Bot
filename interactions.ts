@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, GuildMemberRoleManager, Interaction, Message, MessageFlags, ModalBuilder, PermissionsBitField, TextChannel, TextInputBuilder, TextInputStyle, User, UserSelectMenuBuilder, VoiceChannel } from "npm:discord.js"
-import { saveTranscript, findUser, lastLogin, getServerURLs, getLastDaily, addCoins, setLastDaily, getCoins, removeCoins, addPartner, removePartner, getPartners, getMemberFromBBNId } from "./db.ts";
-import { createTicketChannelID, firstLevelSupportCategoryID, getStartedChannelID, ownerRoleID, secondLevelSupportCategoryID, supportRole, supportRoles, verified } from "./const.ts";
+import { saveTranscript, findUser, lastLogin, getLastDaily, addCoins, setLastDaily, getCoins, removeCoins } from "./db.ts";
+import { createTicketChannelID, firstLevelSupportCategoryID, ownerRoleID, secondLevelSupportCategoryID, supportRole, supportRoles, verified } from "./const.ts";
 
 export async function handleInteraction(interaction: Interaction) {
     if (interaction.isButton()) {
@@ -123,9 +123,6 @@ export async function handleInteraction(interaction: Interaction) {
                 embed.addFields({
                     name: `User ID:`,
                     value: `> ${dbuser.toHexString()}`,
-                }, {
-                    name: `Server URLs:`,
-                    value: `> ${await getServerURLs(interaction.user.id)}`,
                 }, {
                     name: `Last Login:`,
                     value: `\`\`\`${JSON.stringify(login[ 0 ] ?? "none")}\`\`\``,
@@ -366,103 +363,6 @@ export async function handleInteraction(interaction: Interaction) {
             return;
         }
         interaction.reply(`Removed ${coins} coins from ${user.username}'s balance.`);
-    }
-
-    if (interaction.commandName == "addpartner") {
-        if (!interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator)) {
-            interaction.reply("You do not have permission to add partners.");
-            return;
-        }
-
-        const user = interaction.options.getMentionable("user", true) as User;
-        const dbmember = await findUser(user.id);
-        if (!dbmember) {
-            interaction.reply("We couldn't find an bbn account in our database");
-            return;
-        }
-
-        const cpu = interaction.options.getInteger("cpu", true);
-        const ram = interaction.options.getInteger("ram", true);
-        const storage = interaction.options.getInteger("storage", true);
-        const slots = interaction.options.getInteger("slots", true);
-        const invite = await interaction.guild?.invites.create(getStartedChannelID, {
-            maxAge: 0,
-            unique: true,
-            reason: "Partner invite",
-        });
-        if (!invite) {
-            interaction.reply("We couldn't create an invite for the partner");
-            return;
-        }
-        addPartner(dbmember, cpu, ram, storage, slots, invite.code);
-        interaction.reply(`Added ${user.username} as a partner.\n\nFollowing resources got added: \nCPU: ${cpu} \nMemory: ${ram} \nStorage: ${storage} \nSlots: ${slots} \nInvite code: https://discord.gg/${invite.code}`);
-    }
-
-    if (interaction.commandName == "removepartner") {
-        if (!interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator)) {
-            interaction.reply("You do not have permission to remove partners.");
-            return;
-        }
-        const user = interaction.options.getMentionable("user", true) as User;
-        const dbmember = await findUser(user.id);
-        if (!dbmember) {
-            interaction.reply("We couldn't find an bbn account in our database");
-            return;
-        }
-        removePartner(dbmember);
-        interaction.reply(`Removed ${user.username} as a partner.`);
-    }
-
-    if (interaction.commandName == "partners") {
-        if (!interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator)) {
-            interaction.reply("You do not have permission to list partners.");
-            return;
-        }
-        let out = "Owner - CPU, RAM, Storage, Slots, Invitecode, last invite, uses\n";
-        const partners = await getPartners();
-
-        await interaction.deferReply();
-
-        out += (await Promise.all(partners.map(async partner =>
-            `<@${await getMemberFromBBNId(partner.owner)}> \`${partner.owner}\` - \`${partner.cpu}\` \`${partner.memory}\` \`${partner.disk}\` \`${partner.slots}\` \`${partner.invite}\` <t:${Math.round(partner.lastinvite / 1000)}:R> \`${(await interaction.guild?.invites.fetch(partner.invite)!).uses}\``))).join("\n");
-
-        const embed = new EmbedBuilder()
-            .setTitle(`Partners`)
-            .setDescription(out)
-        interaction.editReply({ embeds: [ embed ] });
-    }
-
-    if (interaction.commandName == "servers") {
-        if (interaction.member) {
-            if (interaction.member.roles instanceof GuildMemberRoleManager) {
-                if (!Array.from(interaction.member.roles.cache.keys()).some(role => supportRoles.includes(role))) {
-                    interaction.reply("You do not have permission to list servers.");
-                    return;
-                }
-            } else {
-                if (!interaction.member.roles.some(role => supportRoles.includes(role))) {
-                    interaction.reply("You do not have permission to list servers.");
-                    return;
-
-                }
-            }
-        }
-        const possiblemember = interaction.options.getMentionable("user", true);
-        if (!possiblemember) {
-            interaction.reply("Please mention a user.");
-            return;
-        }
-        const member = possiblemember as GuildMember;
-        const servers = await getServerURLs(member.id);
-        if (servers === null) {
-            interaction.reply("No account found for this user.");
-            return;
-        }
-        if (servers.length === 0) {
-            interaction.reply("This user has no servers.");
-            return;
-        }
-        interaction.reply(`Servers of ${member.user.username}:\n${servers.map(server => `<${server}>`).join("\n")}`);
     }
 
     if (interaction.commandName === "steam") {
