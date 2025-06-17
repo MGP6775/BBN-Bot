@@ -108,7 +108,7 @@ export async function getServerURLs(discordId: string) {
     const servers = await db.collection("@bbn/hosting/servers").find({
         user
     }).toArray();
-    return servers.map(server => server.identifier ? `https://panel.bbn.one/server/${server.identifier}` : `https://bbn.one/hosting?path=servers/${server._id}/`);
+    return servers.map(server => server.identifier ? `https://panel.bbn.music/server/${server.identifier}` : `https://bbn.music/hosting?path=servers/${server._id}/`);
 }
 
 export async function lastLogin(discordId: string) {
