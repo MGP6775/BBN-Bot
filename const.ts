@@ -1,9 +1,10 @@
 // Roles
 
 export const ownerRoleID = "757969277063266407" // Owner role ID
-export const supportRole = "1120392307087261787" // Support role
+export const supportRoleID = "1120392307087261787" // Support role
+export const devRoleID = "815298088184446987" // Developer role ID
 
-export const supportRoles = [ ownerRoleID, "815298088184446987", supportRole ] // Owner, Dev, Support
+export const supportRoles = [ ownerRoleID, devRoleID, supportRoleID ] // Owner, Dev, Support
 
 export const verified = "757983851032215673" // Verified role
 

@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, GuildMemberRoleManager, Interaction, Message, MessageFlags, ModalBuilder, PermissionsBitField, TextChannel, TextInputBuilder, TextInputStyle, User, UserSelectMenuBuilder, VoiceChannel } from "npm:discord.js"
 import { saveTranscript, findUser, lastLogin, getLastDaily, addCoins, setLastDaily, getCoins, removeCoins } from "./db.ts";
-import { createTicketChannelID, firstLevelSupportCategoryID, ownerRoleID, secondLevelSupportCategoryID, supportRole, supportRoles, verified } from "./const.ts";
+import { createTicketChannelID, firstLevelSupportCategoryID, ownerRoleID, secondLevelSupportCategoryID, supportRoleID, supportRoles, verified } from "./const.ts";
 
 export async function handleInteraction(interaction: Interaction) {
     if (interaction.isButton()) {
@@ -145,7 +145,7 @@ export async function handleInteraction(interaction: Interaction) {
                     "ViewChannel": true
                 });
                 await possibleChannel.send({
-                    content: `${interaction.member} || <@&${supportRole}>`,
+                    content: `${interaction.member} || <@&${supportRoleID}>`,
                     embeds: [ embed ],
                     components: [ btnrow ],
                 });
@@ -169,7 +169,7 @@ export async function handleInteraction(interaction: Interaction) {
             }, 5000);
 
             await ch.send({
-                content: `${interaction.member} || <@&${supportRole}>`,
+                content: `${interaction.member} || <@&${supportRoleID}>`,
                 embeds: [ embed ],
                 components: [ btnrow ],
             });
@@ -280,8 +280,8 @@ export async function handleInteraction(interaction: Interaction) {
             reason: "Ticket deescalated",
         });
         interaction.reply({
-            allowedMentions: { roles: [ supportRole ] },
-            content: `Ticket deescalated. || <@&${supportRole}>`
+            allowedMentions: { roles: [ supportRoleID ] },
+            content: `Ticket deescalated. || <@&${supportRoleID}>`
         });
     }
 
@@ -304,7 +304,7 @@ export async function handleInteraction(interaction: Interaction) {
             }
 
             let reward = 10 + (Math.floor(Math.random() * 10));
-            if ((await interaction.guild!.members.fetch(interaction.user.id)).premiumSince || (await interaction.guild!.members.fetch(interaction.user.id)).roles.cache.has(supportRole))
+            if ((await interaction.guild!.members.fetch(interaction.user.id)).premiumSince || (await interaction.guild!.members.fetch(interaction.user.id)).roles.cache.has(supportRoleID))
                 reward *= 10;
             const res = await addCoins(interaction.user.id, reward);
             if (res === null) {
