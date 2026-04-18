@@ -1,5 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, GuildMemberRoleManager, Interaction, Message, MessageFlags, ModalBuilder, PermissionsBitField, TextChannel, TextInputBuilder, TextInputStyle, User, UserSelectMenuBuilder, VoiceChannel } from "npm:discord.js"
-import { saveTranscript, findUser, lastLogin, getLastDaily, addCoins, setLastDaily, getCoins, removeCoins } from "./db.ts";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, EmbedBuilder, GuildMember, GuildMemberRoleManager, Interaction, Message, MessageFlags, ModalBuilder, TextChannel, TextInputBuilder, TextInputStyle, UserSelectMenuBuilder, VoiceChannel } from "npm:discord.js"
 import { createTicketChannelID, firstLevelSupportCategoryID, ownerRoleID, secondLevelSupportCategoryID, supportRoleID, supportRoles, verified } from "./const.ts";
 
 export async function handleInteraction(interaction: Interaction) {
@@ -78,7 +77,6 @@ export async function handleInteraction(interaction: Interaction) {
                     }
                     transcript.messages.push(obj);
                 }
-                await saveTranscript(transcript)
                 await channel.delete();
                 break;
             }
@@ -105,7 +103,6 @@ export async function handleInteraction(interaction: Interaction) {
     if (interaction.isModalSubmit()) {
         try {
             const ticket_user_reason = interaction.fields.getTextInputValue("ticket_reason");
-            const dbuser = await findUser(interaction.user.id);
             const ticketname = `ticket-${interaction.user.id}`;
 
             const fields = [
@@ -118,21 +115,6 @@ export async function handleInteraction(interaction: Interaction) {
                 .setColor("#5539cc")
                 .setTitle(`Ticket of ${interaction.user.username}`)
                 .addFields(fields);
-            if (dbuser) {
-                const login = await lastLogin(interaction.user.id) || [];
-                embed.addFields({
-                    name: `User ID:`,
-                    value: `> ${dbuser.toHexString()}`,
-                }, {
-                    name: `Last Login:`,
-                    value: `\`\`\`${JSON.stringify(login[ 0 ] ?? "none")}\`\`\``,
-                });
-                embed.setFooter({
-                    text: login[ 1 ] ?? "No Login",
-                    iconURL: interaction.user.displayAvatarURL(),
-                })
-                embed.setTimestamp(new Date(new Date().toLocaleString('en-US', { timeZone: login[ 2 ] ?? "UTC" })))
-            }
             const btnrow = new ActionRowBuilder<ButtonBuilder>().addComponents([
                 new ButtonBuilder()
                     .setCustomId(`close_ticket`)
@@ -292,77 +274,6 @@ export async function handleInteraction(interaction: Interaction) {
         const row_username = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(verify_modal)
 
         await interaction.reply({ content: 'Which user do you want to verify?', components: [ row_username ], ephemeral: true })
-    }
-
-    if (interaction.commandName == "daily") {
-        getLastDaily(interaction.user.id).then(async result => {
-            if (result !== null) {
-                const timeDiff = (Date.now() - result) / 3600000;
-                if (timeDiff < 24) {
-                    return interaction.reply(`You have already claimed your daily reward. Please wait ${Math.ceil(24 - timeDiff)} hours before claiming again.`);
-                }
-            }
-
-            let reward = 10 + (Math.floor(Math.random() * 10));
-            if ((await interaction.guild!.members.fetch(interaction.user.id)).premiumSince || (await interaction.guild!.members.fetch(interaction.user.id)).roles.cache.has(supportRoleID))
-                reward *= 10;
-            const res = await addCoins(interaction.user.id, reward);
-            if (res === null) {
-                interaction.reply("We couldn't find your account. Please [log in via Discord here](<https://bbn.music/api/@bbn/auth/redirect/discord?goal=/hosting>)");
-                return;
-            }
-            await setLastDaily(interaction.user.id, Date.now());
-            interaction.reply(`You have received ${reward} coins as your daily reward!`);
-        });
-    }
-
-    if (interaction.commandName == "balance") {
-        const possibleUser = interaction.options.getMentionable("user", false) as User;
-        let { id } = interaction.user;
-        if (possibleUser) {
-            if (!interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator)) {
-                interaction.reply("You do not have permission to view other users' balances.");
-                return;
-            }
-            id = possibleUser.id;
-        }
-        await getCoins(id).then(result => {
-            if (result === null) {
-                interaction.reply("We couldn't find your account. Please [log in via Discord here](<https://bbn.music/api/@bbn/auth/redirect/discord?goal=/hosting>)");
-            } else {
-                interaction.reply(`You currently have ${result} coins.`);
-            }
-        });
-    }
-
-    if (interaction.commandName == "addcoins") {
-        if (!interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator)) {
-            interaction.reply("You do not have permission to add coins.");
-            return;
-        }
-        const user = interaction.options.getMentionable("user", true) as User;
-        const coins = interaction.options.getInteger("coins", true);
-        const res = await addCoins(user.id, coins);
-        if (res === null) {
-            interaction.reply("We couldn't find the account in our database");
-            return;
-        }
-        interaction.reply(`Added ${coins} coins to ${user.username}'s balance.`);
-    }
-
-    if (interaction.commandName == "removecoins") {
-        if (!interaction.memberPermissions?.has(PermissionsBitField.Flags.Administrator)) {
-            interaction.reply("You do not have permission to remove coins.");
-            return;
-        }
-        const user = interaction.options.getMentionable("user", true) as User;
-        const coins = interaction.options.getInteger("coins", true);
-        const res = await removeCoins(user.id, coins);
-        if (res === null) {
-            interaction.reply("We couldn't find the account in our database");
-            return;
-        }
-        interaction.reply(`Removed ${coins} coins from ${user.username}'s balance.`);
     }
 
     if (interaction.commandName === "steam") {

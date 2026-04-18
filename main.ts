@@ -26,58 +26,6 @@ client.on("ready", () => {
                             description: 'Verify a User',
                         },
                         {
-                            name: 'daily',
-                            description: 'Claim your daily reward',
-                        },
-                        {
-                            name: 'balance',
-                            description: 'See your current balance',
-                            options: [
-                                {
-                                    name: 'user',
-                                    description: 'Check the balance of another user',
-                                    type: 9,
-                                    required: false,
-                                }
-                            ]
-                        },
-                        {
-                            name: 'addcoins',
-                            description: 'Add coins to a user',
-                            options: [
-                                {
-                                    name: 'user',
-                                    description: 'The user to add coins to',
-                                    type: 9,
-                                    required: true,
-                                },
-                                {
-                                    name: 'coins',
-                                    description: 'The amount of coins to add',
-                                    type: 4,
-                                    required: true,
-                                }
-                            ]
-                        },
-                        {
-                            name: 'removecoins',
-                            description: 'Remove coins from a user',
-                            options: [
-                                {
-                                    name: 'user',
-                                    description: 'The user to remove coins from',
-                                    type: 9,
-                                    required: true,
-                                },
-                                {
-                                    name: 'coins',
-                                    description: 'The amount of coins to remove',
-                                    type: 4,
-                                    required: true,
-                                }
-                            ]
-                        },
-                        {
                             name: 'escalate',
                             description: 'Escalate a ticket to the next support level'
                         },
