@@ -50,10 +50,8 @@ jobs:
           tags: "ghcr.io/mgp6775/bbn-bot:latest"
 
       - name: Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: cd bbn/ && docker compose up -d --pull always bot
+        env:
+          HOOK_SECRET: ${{ secrets.DEPLOY_HOOK_SECRET }}
+        run: |
+          sig=$(printf '{}' | openssl dgst -sha256 -hmac "$HOOK_SECRET" | awk '{print $NF}')
+          curl -sS --fail-with-body --max-time 600 -X POST -H 'Content-Type: application/json' -H "X-Signature: sha256=$sig" -d '{}' https://bbn.music/hooks/bot
